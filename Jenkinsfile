@@ -23,8 +23,8 @@ pipeline {
                 docker { image 'python:3.10' }
             }
             steps {
-                sh 'pip install pytest' || true
-                sh 'pytest' || true
+                sh 'pip install pytest || true'
+                sh 'pytest || true'
             }
         }
 
@@ -33,8 +33,8 @@ pipeline {
                 docker { image 'python:3.10' }
             }
             steps {
-                sh 'pip install bandit' || true
-                sh 'bandit -r .' || true
+                sh 'pip install bandit || true'
+                sh 'bandit -r . || true'
             }
         }
 
