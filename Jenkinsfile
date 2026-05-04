@@ -2,11 +2,11 @@ pipeline {
     agent any 
 
     environment {
-        DOCKER_CREDENTIALS_ID = 'roseaw-dockerhub'  
-        DOCKER_IMAGE = 'cithit/allenjj2'                               //<-----change this to your MiamiID!
+        DOCKER_CREDENTIALS_ID = 'roseaw-dockerhub'
+        DOCKER_IMAGE = 'cithit/allenjj2'
         IMAGE_TAG = "build-${BUILD_NUMBER}"
-        GITHUB_URL = 'https://github.com/justinjoallen/225-lab3-9' //<-----change this to match this new repository!
-        KUBECONFIG = credentials('allenjj2-225-sp26')                           //<-----change this to match your kubernetes credentials (MiamiID-225)! 
+        GITHUB_URL = 'https://github.com/justinjoallen/225-lab5-1'
+        KUBECONFIG = credentials('allenjj2-225-sp26')
     }
 
     stages {
@@ -18,20 +18,23 @@ pipeline {
             }
         }
 
-        
-                stage('Run Python Tests') {
+        stage('Run Python Tests') {
+            agent {
+                docker { image 'python:3.10' }
+            }
             steps {
-               sh 'pip install pytest || true'
-               sh 'pytest || true'
-
+                sh 'pip install pytest'
+                sh 'pytest'
             }
         }
 
         stage('Run Python Security Scan') {
+            agent {
+                docker { image 'python:3.10' }
+            }
             steps {
-                sh 'pip install bandit || true'
-                sh 'bandit -r . || true'
-
+                sh 'pip install bandit'
+                sh 'bandit -r .'
             }
         }
 
@@ -58,16 +61,12 @@ pipeline {
         stage('Deploy to Dev Environment') {
             steps {
                 script {
-                    // This sets up the Kubernetes configuration using the specified KUBECONFIG
-                    def kubeConfig = readFile(KUBECONFIG)
-                    // This updates the deployment-dev.yaml to use the new image tag
-                    sh "sed -i 's|${DOCKER_IMAGE}:latest|${DOCKER_IMAGE}:${IMAGE_TAG}|' deployment-dev.yaml"
-                   // sh 'kubectl apply -f pv-claim.yaml'
-                   sh "kubectl apply -f deployment-dev.yaml"
+                    sh "sed -i 's|IMAGE_TAG|${IMAGE_TAG}|' deployment-dev.yaml"
+                    sh "kubectl apply -f deployment-dev.yaml"
                 }
             }
         }
-        
+
         stage('Check Kubernetes Cluster') {
             steps {
                 script {
@@ -78,7 +77,6 @@ pipeline {
     }
 
     post {
-
         success {
             slackSend color: "good", message: "Build Completed: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
         }
