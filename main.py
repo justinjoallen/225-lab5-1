@@ -3,7 +3,7 @@ import sqlite3
 import os
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'  # Needed for flash messages
+app.secret_key = 'supersecretkey'  # 
 
 # Database file path
 DATABASE = 'demo.db'
@@ -44,7 +44,6 @@ def index():
     db = get_db()
     contacts = db.execute('SELECT * FROM contacts').fetchall()
 
-    # Display the HTML form along with the contacts table
     return render_template_string('''
         <!DOCTYPE html>
         <html>
